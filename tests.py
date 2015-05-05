@@ -59,6 +59,24 @@ class BasicPreconditionTests (PreconditionTestBase):
 
         self.assertEqual([3, 4], inc_range(3, 5))
 
+    def test_multiple_preconditions(self):
+
+        @preconditions(
+            lambda a: isinstance(a, float),
+            lambda b: isinstance(b, int),
+            lambda b: b > 0,
+            lambda a, b: a < b,
+            )
+        def f(a, b):
+            return a ** b
+
+        self.check_prec_fail(f, 3, 5)
+        self.check_prec_fail(f, 3.0, 5.0)
+        self.check_prec_fail(f, 3.0, -2)
+        self.check_prec_fail(f, 3.0, 2)
+
+        self.assertEqual(0.25, f(0.5, 2))
+
 
 class MethodPreconditionTests (PreconditionTestBase):
     def test_invariant_precondition(self):
