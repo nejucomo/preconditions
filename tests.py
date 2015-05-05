@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, main
 
 from preconditions import PreconditionError, preconditions
 
@@ -184,3 +184,7 @@ class PreconditionInterfaceTests (PreconditionTestBase):
         self.assertRaises(AssertionError, f, 3)
         self.assertIs(f, f.nopre)
         self.assertEqual(6, f.nopre(3))
+
+
+if __name__ == '__main__':
+    main()
