@@ -7,6 +7,14 @@ class PreconditionError (TypeError):
 
 
 def preconditions(*precs):
+    if not precs:
+        # This edge case makes ``@preconditions()`` efficiently delegate
+        # to the wrapped function, which I anticipate will be useful
+        # for stubbing and code consistency in applications:
+        def null_decorator(f):
+            f.nopre = f # Meet the .nopre interface requirement.
+            return f
+        return null_decorator
 
     precinfo = []
     for p in precs:
