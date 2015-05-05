@@ -166,6 +166,13 @@ class MethodPreconditionTests (PreconditionTestBase):
 
 
 class PreconditionInterfaceTests (PreconditionTestBase):
+    def test__name__(self):
+        @preconditions(lambda x: True)
+        def f():
+            pass
+
+        self.assertEqual('f', f.__name__)
+
     def test_nopre(self):
         def assert_false():
             assert False
