@@ -151,3 +151,17 @@ class MethodPreconditionTests (PreconditionTestBase):
         obj.increase_to(7)
 
         self.check_prec_fail(obj.increase_to, 6)
+
+
+class PreconditionInterfaceTests (PreconditionTestBase):
+    def test_nopre(self):
+        def assert_false():
+            assert False
+
+        @preconditions(lambda x: assert_false())
+        def f(x):
+            return 2*x
+
+        self.assertRaises(AssertionError, f, 3)
+        self.assertIs(f, f.nopre)
+        self.assertEqual(6, f.nopre(3))
