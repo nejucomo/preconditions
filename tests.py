@@ -58,3 +58,69 @@ class BasicPreconditionTests (PreconditionTestBase):
         self.check_prec_fail(inc_range, 5, 3)
 
         self.assertEqual([3, 4], inc_range(3, 5))
+
+
+class MethodPreconditionTests (PreconditionTestBase):
+    def test_invariant_precondition(self):
+
+        class C (object):
+            @preconditions(lambda self: self.key in self.items)
+            def get(self):
+                return self.items[self.key]
+
+        i = C()
+
+        self.check_prec_fail(i.get)
+
+        i.items = {'a': 'apple', 'b': 'banana'}
+        i.key = 'b'
+
+        self.assertEqual('banana', i.get())
+
+    def test__init__(self):
+
+        class C (object):
+            @preconditions(lambda name: isinstance(name, unicode))
+            def __init__(self, name):
+                self.name = name
+
+        self.check_prec_fail(C, b'Not unicode!')
+        self.assertEqual(u'Alice', C(u'Alice').name)
+
+    def test_old_school__init__(self):
+
+        class C:
+            @preconditions(lambda name: isinstance(name, unicode))
+            def __init__(self, name):
+                self.name = name
+
+        self.check_prec_fail(C, b'Not unicode!')
+        self.assertEqual(u'Alice', C(u'Alice').name)
+
+    def test__new__(self):
+
+        class C (tuple):
+            @preconditions(lambda a, b: a < b)
+            def __new__(self, a, b):
+                return tuple.__new__(self, (a, b))
+
+        self.check_prec_fail(C, 5, 3)
+        self.assertEqual((3, 5), C(3, 5))
+
+    def test_old_school_method(self):
+
+        class OldSchool:
+            def __init__(self, x):
+                self.x = x
+
+            @preconditions(lambda self, x: self.x < x)
+            def increase_to(self, x):
+                self.x = x
+
+        obj = OldSchool(5)
+
+        self.check_prec_fail(obj.increase_to, 3)
+
+        obj.increase_to(7)
+
+        self.check_prec_fail(obj.increase_to, 6)
