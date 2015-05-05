@@ -14,11 +14,32 @@ def preconditions(*precs):
             raise PreconditionError(
                 'Precondition {!r} must not accept * nor ** args.'.format(p))
 
-        i = -len(spec.defaults)
-        appargs, closureargs = spec.args[:i], spec.args[i:]
+        i = -len(spec.defaults or ())
+        if i == 0:
+            appargs, closureargs = spec.args, []
+        else:
+            appargs, closureargs = spec.args[:i], spec.args[i:]
         precinfo.append( (appargs, closureargs, p) )
 
     def decorate(f):
+        fspec = inspect.getargspec(f)
+
+        for (appargs, closureargs, p) in precinfo:
+            for apparg in appargs:
+                if apparg not in fspec.args:
+                    raise PreconditionError(
+                        ('Precondition {!r} specifies non-default arg {!r}' +
+                         ' which is not one of the known application args:' +
+                         ' {!s}')
+                        .format(p, apparg, ', '.join(fspec.args)))
+            for carg in closureargs:
+                if carg in fspec.args:
+                    raise PreconditionError(
+                        ('Precondition {!r} specifies default arg {!r}' +
+                         ' which masks one of the known application args:' +
+                         ' {!s}')
+                        .format(p, carg, ', '.join(fspec.args)))
+
         def g(*a, **kw):
             return f(*a, **kw)
         return g
