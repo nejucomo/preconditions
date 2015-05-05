@@ -108,10 +108,11 @@ class MethodPreconditionTests (PreconditionTestBase):
                 return self.items[self.key]
 
         i = C()
+        i.items = {'a': 'apple', 'b': 'banana'}
+        i.key = 'X'
 
         self.check_prec_fail(i.get)
 
-        i.items = {'a': 'apple', 'b': 'banana'}
         i.key = 'b'
 
         self.assertEqual('banana', i.get())
