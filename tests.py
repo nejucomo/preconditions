@@ -168,8 +168,8 @@ class MethodPreconditionTests (PreconditionTestBase):
 class PreconditionInterfaceTests (PreconditionTestBase):
     def test__name__(self):
         @preconditions(lambda x: True)
-        def f():
-            pass
+        def f(x):
+            return x
 
         self.assertEqual('f', f.__name__)
 
@@ -177,13 +177,15 @@ class PreconditionInterfaceTests (PreconditionTestBase):
         def assert_false():
             assert False
 
-        @preconditions(lambda x: assert_false())
+        p = preconditions(lambda x: assert_false())
+
         def f(x):
             return 2*x
 
-        self.assertRaises(AssertionError, f, 3)
-        self.assertIs(f, f.nopre)
-        self.assertEqual(6, f.nopre(3))
+        g = p(f)
+
+        self.assertIs(f, g.nopre)
+        self.assertEqual(6, g.nopre(3))
 
 
 if __name__ == '__main__':
