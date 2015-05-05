@@ -1,3 +1,4 @@
+from functools import wraps
 import inspect
 
 
@@ -40,7 +41,10 @@ def preconditions(*precs):
                          ' {!s}')
                         .format(p, carg, ', '.join(fspec.args)))
 
+        @wraps(f)
         def g(*a, **kw):
             return f(*a, **kw)
+
+        g.nopre = f
         return g
     return decorate
