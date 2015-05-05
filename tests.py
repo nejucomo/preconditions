@@ -173,6 +173,13 @@ class PreconditionInterfaceTests (PreconditionTestBase):
 
         self.assertEqual('f', f.__name__)
 
+    def test_zero_preconditions__name__(self):
+        @preconditions()
+        def f(x):
+            return x
+
+        self.assertEqual('f', f.__name__)
+
     def test_nopre(self):
         def assert_false():
             assert False
@@ -187,6 +194,16 @@ class PreconditionInterfaceTests (PreconditionTestBase):
         self.assertIs(f, g.nopre)
         self.assertEqual(6, g.nopre(3))
 
+    def test_zero_preconditions_nopre(self):
+        p = preconditions()
+
+        def f(x):
+            return 2*x
+
+        g = p(f)
+
+        self.assertIs(f, g.nopre)
+        self.assertEqual(6, g.nopre(3))
 
 if __name__ == '__main__':
     main()
