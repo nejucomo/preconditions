@@ -51,6 +51,20 @@ def preconditions(*precs):
 
         @wraps(f)
         def g(*a, **kw):
+            args = inspect.getcallargs(f, *a, **kw)
+            for (appargs, _, p) in precinfo:
+                if not p(*[args[aa] for aa in appargs]):
+                    raise PreconditionError(
+                        'Precondition {!r} failed in call: {!r}{}'
+                        .format(
+                            p,
+                            g,
+                            inspect.formatargvalues(
+                                fspec.args,
+                                fspec.varargs,
+                                fspec.keywords,
+                                args)))
+
             return f(*a, **kw)
 
         g.nopre = f
