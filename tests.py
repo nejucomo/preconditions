@@ -77,6 +77,18 @@ class BasicPreconditionTests (PreconditionTestBase):
 
         self.assertEqual(0.25, f(0.5, 2))
 
+    def test_zero_preconditions(self):
+        p = preconditions()
+
+        def f():
+            return None
+
+        g = p(f)
+
+        self.assertIs(None, f())
+        self.assertIs(None, g())
+        self.assertIs(f, g)
+
     def test_precondition_with_default(self):
 
         @preconditions(lambda a, _s=[2, 3, 5]: a in _s)
