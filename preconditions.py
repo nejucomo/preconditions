@@ -3,4 +3,8 @@ class PreconditionError (TypeError):
 
 
 def preconditions(*precs):
-    pass # stub.
+    def decorate(f):
+        def g(*a, **kw):
+            return f(*a, **kw)
+        return g
+    return decorate
