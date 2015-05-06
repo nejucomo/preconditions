@@ -7,6 +7,8 @@ class PreconditionError (TypeError):
 
 
 def preconditions(*precs):
+    stripped_source = lambda obj: inspect.getsource(obj).strip()
+
     if not precs:
         # This edge case makes ``@preconditions()`` efficiently delegate
         # to the wrapped function, which I anticipate will be useful
@@ -23,7 +25,7 @@ def preconditions(*precs):
             raise PreconditionError(
                 ('Invalid precondition must not accept * nor ** args:\n' +
                  '  {!s}\n')
-                .format(inspect.getsource(p).strip()))
+                .format(stripped_source(p)))
 
         i = -len(spec.defaults or ())
         if i == 0:
@@ -44,7 +46,7 @@ def preconditions(*precs):
                          'Known parameters: {!r}\n')
                         .format(
                             apparg,
-                            inspect.getsource(p).strip(),
+                            stripped_source(p),
                             fspec.args))
             for carg in closureargs:
                 if carg in fspec.args:
@@ -54,7 +56,7 @@ def preconditions(*precs):
                          'Known parameters: {!r}\n')
                         .format(
                             carg,
-                            inspect.getsource(p).strip(),
+                            stripped_source(p),
                             fspec.args))
 
         @wraps(f)
@@ -71,7 +73,7 @@ def preconditions(*precs):
                                 fspec.varargs,
                                 fspec.keywords,
                                 args),
-                            inspect.getsource(p).strip()))
+                            stripped_source(p)))
 
             return f(*a, **kw)
 
