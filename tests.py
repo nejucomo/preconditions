@@ -7,6 +7,9 @@ class PreconditionTestBase (TestCase):
     def check_prec_fail(self, target, *args, **kw):
         self.assertRaises(PreconditionError, target, *args, **kw)
 
+    def check_prec_fail_rgx(self, rgx, target, *args, **kw):
+        self.assertRaisesRegexp(PreconditionError, rgx, target, *args, **kw)
+
 
 class InvalidPreconditionTests (PreconditionTestBase):
     def test_varargs(self):
@@ -213,8 +216,7 @@ class ErrorReportingTests (PreconditionTestBase):
         def f(x):
             return x
 
-        self.assertRaisesRegexp(
-            PreconditionError,
+        self.check_prec_fail_rgx(
             (r'^Precondition failed in call ' +
              r'<function f at 0x[0-9a-fA-F]+>\(x=7\):\n' +
              r'  @preconditions\(lambda x: x != 7\)\n$'),
@@ -229,8 +231,7 @@ class ErrorReportingTests (PreconditionTestBase):
         def f(x):
             return x
 
-        self.assertRaisesRegexp(
-            PreconditionError,
+        self.check_prec_fail_rgx(
             (r'Precondition failed in call ' +
              r'<function f at 0x[0-9a-fA-F]+>\(x=6\.5\):\n' +
              r'  lambda x: isinstance\(x, int\),\n$'),
