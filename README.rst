@@ -18,8 +18,9 @@ First let's take a tour of examples. All examples assume the
 Basic type checking
 -------------------
 
-The ``double`` function requires, as a precondition, that the ``i``
-parameter is an ``int``:
+The ``double`` `application function` requires that the ``i`` parameter
+is an ``int``, which is verified by a single `predicate` (the ``lambda``
+expression):
 
 .. code:: python
 
