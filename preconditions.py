@@ -55,15 +55,15 @@ def preconditions(*precs):
             for (appargs, _, p) in precinfo:
                 if not p(*[args[aa] for aa in appargs]):
                     raise PreconditionError(
-                        'Precondition {!r} failed in call: {!r}{}'
+                        'Precondition failed in call {!r}{}:\n  {!s}\n'
                         .format(
-                            p,
                             g,
                             inspect.formatargvalues(
                                 fspec.args,
                                 fspec.varargs,
                                 fspec.keywords,
-                                args)))
+                                args),
+                            inspect.getsource(p).strip()))
 
             return f(*a, **kw)
 
