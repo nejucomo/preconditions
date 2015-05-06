@@ -21,7 +21,9 @@ def preconditions(*precs):
         spec = inspect.getargspec(p)
         if spec.varargs or spec.keywords:
             raise PreconditionError(
-                'Precondition {!r} must not accept * nor ** args.'.format(p))
+                ('Invalid precondition must not accept * nor ** args:\n' +
+                 '  {!s}\n')
+                .format(inspect.getsource(p).strip()))
 
         i = -len(spec.defaults or ())
         if i == 0:
@@ -37,17 +39,23 @@ def preconditions(*precs):
             for apparg in appargs:
                 if apparg not in fspec.args:
                     raise PreconditionError(
-                        ('Precondition {!r} specifies non-default arg {!r}' +
-                         ' which is not one of the known application args:' +
-                         ' {!s}')
-                        .format(p, apparg, ', '.join(fspec.args)))
+                        ('Invalid precondition refers to unknown parameter {!r}:\n' +
+                         '  {!s}\n' +
+                         'Known parameters: {!r}\n')
+                        .format(
+                            apparg,
+                            inspect.getsource(p).strip(),
+                            fspec.args))
             for carg in closureargs:
                 if carg in fspec.args:
                     raise PreconditionError(
-                        ('Precondition {!r} specifies default arg {!r}' +
-                         ' which masks one of the known application args:' +
-                         ' {!s}')
-                        .format(p, carg, ', '.join(fspec.args)))
+                        ('Invalid precondition masks parameter {!r}:\n' +
+                         '  {!s}\n' +
+                         'Known parameters: {!r}\n')
+                        .format(
+                            carg,
+                            inspect.getsource(p).strip(),
+                            fspec.args))
 
         @wraps(f)
         def g(*a, **kw):
