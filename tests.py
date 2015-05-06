@@ -4,26 +4,26 @@ from preconditions import PreconditionError, preconditions
 
 
 class PreconditionTestBase (TestCase):
-    def check_prec_fail(self, target, *args, **kw):
+    def assertPreconditionFails(self, target, *args, **kw):
         self.assertRaises(PreconditionError, target, *args, **kw)
 
-    def check_prec_fail_rgx(self, rgx, target, *args, **kw):
+    def assertPreconditionFailsRegexp(self, rgx, target, *args, **kw):
         self.assertRaisesRegexp(PreconditionError, rgx, target, *args, **kw)
 
 
 class InvalidPreconditionTests (PreconditionTestBase):
     def test_varargs(self):
-        self.check_prec_fail(preconditions, lambda *a: True)
+        self.assertPreconditionFails(preconditions, lambda *a: True)
 
     def test_kwargs(self):
-        self.check_prec_fail(preconditions, lambda **kw: True)
+        self.assertPreconditionFails(preconditions, lambda **kw: True)
 
     def test_unknown_nondefault_param(self):
         # The preconditions refer to "x" but are applied to "a, b", so
         # "x" is unknown:
         p = preconditions(lambda x: True)
 
-        self.check_prec_fail(p, lambda a, b: a+b)
+        self.assertPreconditionFails(p, lambda a, b: a+b)
 
     def test_default_masks_param(self):
         # Preconditions may have defaults as a hack to bind local
@@ -32,7 +32,7 @@ class InvalidPreconditionTests (PreconditionTestBase):
         # parameter names:
         p = preconditions(lambda a, b='a stored value': True)
 
-        self.check_prec_fail(p, lambda a, b: a+b)
+        self.assertPreconditionFails(p, lambda a, b: a+b)
 
 
 class BasicPreconditionTests (PreconditionTestBase):
@@ -43,10 +43,10 @@ class BasicPreconditionTests (PreconditionTestBase):
             return i-1
 
         # Not greater than 0:
-        self.check_prec_fail(uint_pred, 0)
+        self.assertPreconditionFails(uint_pred, 0)
 
         # Not an int:
-        self.check_prec_fail(uint_pred, 1.0)
+        self.assertPreconditionFails(uint_pred, 1.0)
 
         # Test a successful call:
         self.assertEqual(0, uint_pred(1))
@@ -57,8 +57,8 @@ class BasicPreconditionTests (PreconditionTestBase):
         def inc_range(a, b):
             return range(a, b)
 
-        self.check_prec_fail(inc_range, 3, 3)
-        self.check_prec_fail(inc_range, 5, 3)
+        self.assertPreconditionFails(inc_range, 3, 3)
+        self.assertPreconditionFails(inc_range, 5, 3)
 
         self.assertEqual([3, 4], inc_range(3, 5))
 
@@ -73,10 +73,10 @@ class BasicPreconditionTests (PreconditionTestBase):
         def f(a, b):
             return a ** b
 
-        self.check_prec_fail(f, 3, 5)
-        self.check_prec_fail(f, 3.0, 5.0)
-        self.check_prec_fail(f, 3.0, -2)
-        self.check_prec_fail(f, 3.0, 2)
+        self.assertPreconditionFails(f, 3, 5)
+        self.assertPreconditionFails(f, 3.0, 5.0)
+        self.assertPreconditionFails(f, 3.0, -2)
+        self.assertPreconditionFails(f, 3.0, 2)
 
         self.assertEqual(0.25, f(0.5, 2))
 
@@ -98,7 +98,7 @@ class BasicPreconditionTests (PreconditionTestBase):
         def f(a):
             return a
 
-        self.check_prec_fail(f, 4)
+        self.assertPreconditionFails(f, 4)
         self.assertEqual(3, f(3))
 
 
@@ -114,7 +114,7 @@ class MethodPreconditionTests (PreconditionTestBase):
         i.items = {'a': 'apple', 'b': 'banana'}
         i.key = 'X'
 
-        self.check_prec_fail(i.get)
+        self.assertPreconditionFails(i.get)
 
         i.key = 'b'
 
@@ -127,7 +127,7 @@ class MethodPreconditionTests (PreconditionTestBase):
             def __init__(self, name):
                 self.name = name
 
-        self.check_prec_fail(C, b'Not unicode!')
+        self.assertPreconditionFails(C, b'Not unicode!')
         self.assertEqual(u'Alice', C(u'Alice').name)
 
     def test_old_school__init__(self):
@@ -137,7 +137,7 @@ class MethodPreconditionTests (PreconditionTestBase):
             def __init__(self, name):
                 self.name = name
 
-        self.check_prec_fail(C, b'Not unicode!')
+        self.assertPreconditionFails(C, b'Not unicode!')
         self.assertEqual(u'Alice', C(u'Alice').name)
 
     def test__new__(self):
@@ -147,7 +147,7 @@ class MethodPreconditionTests (PreconditionTestBase):
             def __new__(self, a, b):
                 return tuple.__new__(self, (a, b))
 
-        self.check_prec_fail(C, 5, 3)
+        self.assertPreconditionFails(C, 5, 3)
         self.assertEqual((3, 5), C(3, 5))
 
     def test_old_school_method(self):
@@ -162,11 +162,11 @@ class MethodPreconditionTests (PreconditionTestBase):
 
         obj = OldSchool(5)
 
-        self.check_prec_fail(obj.increase_to, 3)
+        self.assertPreconditionFails(obj.increase_to, 3)
 
         obj.increase_to(7)
 
-        self.check_prec_fail(obj.increase_to, 6)
+        self.assertPreconditionFails(obj.increase_to, 6)
 
 
 class PreconditionInterfaceTests (PreconditionTestBase):
@@ -216,7 +216,7 @@ class ErrorReportingTests (PreconditionTestBase):
         def f(x):
             return x
 
-        self.check_prec_fail_rgx(
+        self.assertPreconditionFailsRegexp(
             (r'^Precondition failed in call ' +
              r'<function f at 0x[0-9a-fA-F]+>\(x=7\):\n' +
              r'  @preconditions\(lambda x: x != 7\)\n$'),
@@ -231,7 +231,7 @@ class ErrorReportingTests (PreconditionTestBase):
         def f(x):
             return x
 
-        self.check_prec_fail_rgx(
+        self.assertPreconditionFailsRegexp(
             (r'Precondition failed in call ' +
              r'<function f at 0x[0-9a-fA-F]+>\(x=6\.5\):\n' +
              r'  lambda x: isinstance\(x, int\),\n$'),
