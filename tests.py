@@ -13,26 +13,40 @@ class PreconditionTestBase (TestCase):
 
 class InvalidPreconditionTests (PreconditionTestBase):
     def test_varargs(self):
-        self.assertPreconditionFails(preconditions, lambda *a: True)
+        self.assertPreconditionFailsRegexp(
+            (r'^Invalid precondition must not accept \* nor \*\* args:\n' +
+             r'  lambda \*a: True,\n$'),
+            preconditions,
+            lambda *a: True,
+            )
 
     def test_kwargs(self):
-        self.assertPreconditionFails(preconditions, lambda **kw: True)
+        self.assertPreconditionFailsRegexp(
+            (r'^Invalid precondition must not accept \* nor \*\* args:\n' +
+             r'  lambda \*\*kw: True,\n$'),
+            preconditions,
+            lambda **kw: True,
+            )
 
     def test_unknown_nondefault_param(self):
-        # The preconditions refer to "x" but are applied to "a, b", so
-        # "x" is unknown:
         p = preconditions(lambda x: True)
 
-        self.assertPreconditionFails(p, lambda a, b: a+b)
+        self.assertPreconditionFailsRegexp(
+            (r"^Invalid precondition refers to unknown parameter 'x':\n" +
+             r"  p = preconditions\(lambda x: True\)\n" +
+             r"Known parameters: \['a', 'b'\]\n$"),
+            p,
+            lambda a, b: a+b)
 
     def test_default_masks_param(self):
-        # Preconditions may have defaults as a hack to bind local
-        # variables (such as when declared syntactically inside loops),
-        # but this "closure hack" must not mask application function
-        # parameter names:
         p = preconditions(lambda a, b='a stored value': True)
 
-        self.assertPreconditionFails(p, lambda a, b: a+b)
+        self.assertPreconditionFailsRegexp(
+            (r"^Invalid precondition masks parameter 'b':\n" +
+             r"  p = preconditions\(lambda a, b='a stored value': True\)\n" +
+             r"Known parameters: \['a', 'b'\]\n$"),
+            p,
+            lambda a, b: a+b)
 
 
 class BasicPreconditionTests (PreconditionTestBase):
