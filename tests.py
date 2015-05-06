@@ -206,5 +206,38 @@ class PreconditionInterfaceTests (PreconditionTestBase):
         self.assertIs(f, g.nopre)
         self.assertEqual(6, g.nopre(3))
 
+
+class ErrorReportingTests (PreconditionTestBase):
+    def test_single_predicate_single_line_failure_includes_source(self):
+        @preconditions(lambda x: x != 7)
+        def f(x):
+            return x
+
+        self.assertRaisesRegexp(
+            PreconditionError,
+            (r'^Precondition failed in call ' +
+             r'<function f at 0x[0-9a-fA-F]+>\(x=7\):\n' +
+             r'  @preconditions\(lambda x: x != 7\)\n$'),
+            f,
+            7)
+
+    def test_multiple_line_multiple_predicates_includes_specific_source(self):
+        @preconditions(
+            lambda x: x > 0,
+            lambda x: isinstance(x, int),
+            )
+        def f(x):
+            return x
+
+        self.assertRaisesRegexp(
+            PreconditionError,
+            (r'Precondition failed in call ' +
+             r'<function f at 0x[0-9a-fA-F]+>\(x=6\.5\):\n' +
+             r'  lambda x: isinstance\(x, int\),\n$'),
+            f,
+            6.5)
+
+
+
 if __name__ == '__main__':
     main()
