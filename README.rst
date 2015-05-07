@@ -173,3 +173,10 @@ local loop variable.
 
 .. FIXME: create an example.
 
+Similar Projects
+================
+
+`covenant`_ - Code contracts for Python 3.
+
+.. _`covenant`: https://github.com/kisielk/covenant
+
