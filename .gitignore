@@ -1,3 +1,4 @@
 preconditions.egg-info/
+dist/
 
 *.pyc
